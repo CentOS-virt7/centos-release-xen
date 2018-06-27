@@ -1,0 +1,18 @@
+# CentOS-Xen.repo
+#
+# Please see http://wiki.centos.org/QaWiki/Xen4 for more
+# information
+
+[centos-virt-xen-410]
+name=CentOS-$releasever - xen
+baseurl=http://mirror.centos.org/centos/$releasever/virt/$basearch/xen-410
+gpgcheck=1
+enabled=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-Virtualization
+
+[centos-virt-xen-410-testing]
+name=CentOS-$releasever - xen - testing
+baseurl=http://buildlogs.centos.org/centos/$releasever/virt/$basearch/xen-410
+gpgcheck=0
+enabled=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-Virtualization
