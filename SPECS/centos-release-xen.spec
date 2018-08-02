@@ -2,7 +2,7 @@ Summary: CentOS Virt SIG Xen repo configs
 Name: centos-release-xen
 Epoch: 10
 Version: 8
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPL
 Group: System Environment/Base
 # centos-release-xen-$version.XX.$arch should copy
@@ -14,6 +14,7 @@ Source100: CentOS-Xen-dependencies.repo.x86_64
 Source144: CentOS-Xen-44.repo.x86_64
 Source146: CentOS-Xen-46.repo.x86_64
 Source148: CentOS-Xen-48.repo.x86_64
+Source410: CentOS-Xen-410.repo.x86_64
 Source246: CentOS-Xen-46.repo.aarch64
 Source300: grub-bootxen.sh
 URL: http://wiki.centos.org/QaWiki/Xen4
@@ -34,8 +35,8 @@ yum configs and scripts to allow easy installation of Xen on CentOS.
 NOTE This package may change major versions of Xen automatically on
 yum update.  If this is not the behavior you want, please install the
 sub-package specific to the version of xen you want to use and then
-remove this package.  (At the moment this is centos-release-xen-44 or
-		       centos-release-xen-46).
+remove this package.  (At the moment this is centos-release-xen-46 or
+centos-release-xen-48 or centos-release-xen-410).
 
 %package common
 Summary: CentOS Virt Sig Xen support files
@@ -101,6 +102,24 @@ manually install the newer version of centos-release-xen-NN to get the
 newer version.  If this is not the behavior you want, please install
 the generic package (centos-release-xen).
 
+%package 410
+Summary: CentOS Virt Sig Xen repo configs for Xen 4.10
+Requires: /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-Virtualization
+Requires: %{_bindir}/grub-bootxen.sh
+
+%description 410
+yum configs and scripts to allow easy installation of Xen 4.10 on CentOS.
+
+Multiple versions of centos-release-xen-NN can be installed at the
+same time; by default yum will choose the latest version of xen
+available across all repositories.
+
+This package will not update automatically to newer Xen releases;
+\if you don\'t have centos-release-xen installed, you will have to
+manually install the newer version of centos-release-xen-NN to get the
+newer version.  If this is not the behavior you want, please install
+the generic package (centos-release-xen).
+
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -117,9 +136,10 @@ install -m 644 %{SOURCE100} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen-dependenc
 %if 0%{?centos_ver} <= 6
 install -m 644 %{SOURCE144} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen-44.repo
 %endif
-install -m 644 %{SOURCE146} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen.repo
+install -m 644 %{SOURCE148} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen.repo
 install -m 644 %{SOURCE146} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen-46.repo
 install -m 644 %{SOURCE148} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen-48.repo
+install -m 644 %{SOURCE410} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen-410.repo
 
 %endif
 
@@ -158,7 +178,15 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 %config(noreplace) /etc/yum.repos.d/CentOS-Xen-48.repo
 
+%files 410
+%defattr(-,root,root)
+%config(noreplace) /etc/yum.repos.d/CentOS-Xen-410.repo
+
 %changelog
+* Tue Jul 31 2018 Anthony PERARD <anthony.perard@citrix.com> - 10:8-5.el7
+- Change default to Xen 4.8
+- Add Xen 4.10 repo
+
 * Thu Jan 18 2018 George Dunlap <george.dunlap@citrix.com> - 8-4.centos
 - Add 'dependencies' repo, to selectively enable packages from epel
 
