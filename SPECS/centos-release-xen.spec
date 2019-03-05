@@ -1,8 +1,13 @@
+%if 0%{?centos_ver} <= 6
+%define list_xen_repo 410
+%else
+%define list_xen_repo 410 412
+%endif
 Summary: CentOS Virt SIG Xen repo configs
 Name: centos-release-xen
 Epoch: 10
 Version: 8
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPL
 Group: System Environment/Base
 # centos-release-xen-$version.XX.$arch should copy
@@ -99,6 +104,7 @@ manually install the newer version of centos-release-xen-NN to get the
 newer version.  If this is not the behavior you want, please install
 the generic package (centos-release-xen).
 
+%if 0%{?centos_ver} >= 7
 %package 412
 Summary: CentOS Virt Sig Xen repo configs for Xen 4.12
 Requires: /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-Virtualization
@@ -116,12 +122,13 @@ This package will not update automatically to newer Xen releases;
 manually install the newer version of centos-release-xen-NN to get the
 newer version.  If this is not the behavior you want, please install
 the generic package (centos-release-xen).
+%endif
 
 
 %build
 
 # Generate the .repo files
-for xenversion in 410 412; do
+for xenversion in %{list_xen_repo}; do
   cat <<EOF > CentOS-Xen-$xenversion.repo
 # CentOS-Xen.repo
 #
@@ -161,7 +168,7 @@ install -m 644 %{SOURCE146} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen-46.repo
 %endif
 install -m 644 %{SOURCE148} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen.repo
 install -m 644 %{SOURCE148} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen-48.repo
-for xenversion in 410 412; do
+for xenversion in %{list_xen_repo}; do
   install -m 644 CentOS-Xen-$xenversion.repo $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen-$xenversion.repo
 done
 
@@ -202,11 +209,16 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 %config(noreplace) /etc/yum.repos.d/CentOS-Xen-410.repo
 
+%if 0%{?centos_ver} >= 7
 %files 412
 %defattr(-,root,root)
 %config(noreplace) /etc/yum.repos.d/CentOS-Xen-412.repo
+%endif
 
 %changelog
+* Tue Mar 05 2019 Anthony PERARD <anthony.perard@citrix.com> - 8-7
+- Fix, 4.12 is only available el7 repos
+
 * Thu Feb 28 2019 Anthony PERARD <anthony.perard@citrix.com> - 10:8-6
 - 4.6 only available in el6 now
 - Adding Xen 4.12 repo
