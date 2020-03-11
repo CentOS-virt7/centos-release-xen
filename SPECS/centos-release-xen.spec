@@ -1,13 +1,16 @@
 %if 0%{?centos_ver} <= 6
+%define default_xen 410
 %define list_xen_repo 410
 %else
+%define default_xen 412
 %define list_xen_repo 410 412
 %endif
+
 Summary: CentOS Virt SIG Xen repo configs
 Name: centos-release-xen
 Epoch: 10
 Version: 8
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPL
 Group: System Environment/Base
 # centos-release-xen-$version.XX.$arch should copy
@@ -166,11 +169,11 @@ install -m 644 %{SOURCE100} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen-dependenc
 %if 0%{?centos_ver} <= 6
 install -m 644 %{SOURCE146} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen-46.repo
 %endif
-install -m 644 %{SOURCE148} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen.repo
 install -m 644 %{SOURCE148} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen-48.repo
 for xenversion in %{list_xen_repo}; do
   install -m 644 CentOS-Xen-$xenversion.repo $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen-$xenversion.repo
 done
+install -m 644 CentOS-Xen-%{default_xen}.repo $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen.repo
 
 %endif
 
@@ -216,6 +219,11 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Mar 05 2020 Anthony PERARD <anthony.perard@citrix.com> - 8-8
+- Change default:
+   - to 4.12 for CentOS 7
+   - to 4.10 for CentOS 6
+
 * Tue Mar 05 2019 Anthony PERARD <anthony.perard@citrix.com> - 8-7
 - Fix, 4.12 is only available el7 repos
 
