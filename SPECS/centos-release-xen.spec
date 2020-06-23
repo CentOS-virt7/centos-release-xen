@@ -1,16 +1,25 @@
-%if 0%{?centos_ver} <= 6
+%if %{?centos_ver} == 6
 %define default_xen 410
-%define list_xen_repo 410
 %else
 %define default_xen 412
+%endif
+
+%if %{?centos_ver} == 6
+%define list_xen_repo 410
+%endif
+%if %{?centos_ver} == 7
 %define list_xen_repo 410 412
 %endif
+%if %{?centos_ver} == 8
+%define list_xen_repo 412
+%endif
+
 
 Summary: CentOS Virt SIG Xen repo configs
 Name: centos-release-xen
 Epoch: 10
-Version: 8
-Release: 8%{?dist}
+Version: 9
+Release: 1%{?dist}
 License: GPL
 Group: System Environment/Base
 # centos-release-xen-$version.XX.$arch should copy
@@ -29,7 +38,7 @@ Provides: centos-release-xen
 
 BuildRoot: %{_tmppath}/centos-release-xen-root
 
-ExclusiveArch: x86_64 aarch64
+ExclusiveArch: x86_64
 
 # This should pull in centos-release-virt-common
 Requires: /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-Virtualization
@@ -51,82 +60,36 @@ Summary: CentOS Virt Sig Xen support files
 This contains the grub-bootxen.sh helper-script which enables the xen
 package to add itself to grub automatically.
 
+%define xen_subpackage_main() \
+%package %{1} \
+Summary: CentOS Virt Sig Xen repo configs for Xen %{2} \
+Requires: /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-Virtualization \
+Requires: %{_bindir}/grub-bootxen.sh \
+%description %{1} \
+yum configs and scripts to allow easy installation of Xen %{2} on CentOS. \
+ \
+Multiple versions of centos-release-xen-NN can be installed at the \
+same time; by default yum will choose the latest version of xen \
+available across all repositories. \
+ \
+This package will not update automatically to newer Xen releases; \
+\if you don\'t have centos-release-xen installed, you will have to \
+manually install the newer version of centos-release-xen-NNN to get the \
+newer version.  If this is not the behavior you want, please install \
+the generic package (centos-release-xen). \
+%{nil}
+
+%define xen_subpackage() \
+%{expand:%%xen_subpackage_main %{1} %(i=%{1}; echo ${i:0:1}.${i:1})}
+
 %if 0%{?centos_ver} <= 6
-%package 46
-Summary: CentOS Virt Sig Xen repo configs for Xen 4.6
-Requires: /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-Virtualization
-Requires: %{_bindir}/grub-bootxen.sh
-
-%description 46
-yum configs and scripts to allow easy installation of Xen 4.6 on CentOS.
-
-Multiple versions of centos-release-xen-NN can be installed at the
-same time; by default yum will choose the latest version of xen
-available across all repositories.
-
-This package will not update automatically to newer Xen releases;
-\if you don\'t have centos-release-xen installed, you will have to
-manually install the newer version of centos-release-xen-NN to get the
-newer version.  If this is not the behavior you want, please install
-the generic package (centos-release-xen).
+%xen_subpackage 46
+%endif
+%if 0%{?centos_ver} <= 7
+%xen_subpackage 48
 %endif
 
-%package 48
-Summary: CentOS Virt Sig Xen repo configs for Xen 4.8
-Requires: /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-Virtualization
-Requires: %{_bindir}/grub-bootxen.sh
-
-%description 48
-yum configs and scripts to allow easy installation of Xen 4.8 on CentOS.
-
-Multiple versions of centos-release-xen-NN can be installed at the
-same time; by default yum will choose the latest version of xen
-available across all repositories.
-
-This package will not update automatically to newer Xen releases;
-\if you don\'t have centos-release-xen installed, you will have to
-manually install the newer version of centos-release-xen-NN to get the
-newer version.  If this is not the behavior you want, please install
-the generic package (centos-release-xen).
-
-%package 410
-Summary: CentOS Virt Sig Xen repo configs for Xen 4.10
-Requires: /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-Virtualization
-Requires: %{_bindir}/grub-bootxen.sh
-
-%description 410
-yum configs and scripts to allow easy installation of Xen 4.10 on CentOS.
-
-Multiple versions of centos-release-xen-NN can be installed at the
-same time; by default yum will choose the latest version of xen
-available across all repositories.
-
-This package will not update automatically to newer Xen releases;
-\if you don\'t have centos-release-xen installed, you will have to
-manually install the newer version of centos-release-xen-NN to get the
-newer version.  If this is not the behavior you want, please install
-the generic package (centos-release-xen).
-
-%if 0%{?centos_ver} >= 7
-%package 412
-Summary: CentOS Virt Sig Xen repo configs for Xen 4.12
-Requires: /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-Virtualization
-Requires: %{_bindir}/grub-bootxen.sh
-
-%description 412
-yum configs and scripts to allow easy installation of Xen 4.12 on CentOS.
-
-Multiple versions of centos-release-xen-NN can be installed at the
-same time; by default yum will choose the latest version of xen
-available across all repositories.
-
-This package will not update automatically to newer Xen releases;
-\if you don\'t have centos-release-xen installed, you will have to
-manually install the newer version of centos-release-xen-NN to get the
-newer version.  If this is not the behavior you want, please install
-the generic package (centos-release-xen).
-%endif
-
+%{expand:%(for v in %{list_xen_repo}; do echo "%%xen_subpackage $v"; done)}
 
 %build
 
@@ -169,7 +132,10 @@ install -m 644 %{SOURCE100} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen-dependenc
 %if 0%{?centos_ver} <= 6
 install -m 644 %{SOURCE146} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen-46.repo
 %endif
+%if 0%{?centos_ver} <= 7
 install -m 644 %{SOURCE148} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen-48.repo
+%endif
+
 for xenversion in %{list_xen_repo}; do
   install -m 644 CentOS-Xen-$xenversion.repo $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen-$xenversion.repo
 done
@@ -198,27 +164,26 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) /etc/yum.repos.d/CentOS-Xen-dependencies.repo
 %endif
 
+%define xen_subpackage_file() \
+%files %{1} \
+%defattr(-,root,root) \
+%config(noreplace) /etc/yum.repos.d/CentOS-Xen-%{1}.repo \
+%{nil}
+
 %if 0%{?centos_ver} <= 6
-%files 46
-%defattr(-,root,root)
-%config(noreplace) /etc/yum.repos.d/CentOS-Xen-46.repo
+%xen_subpackage_file 46
 %endif
 
-%files 48
-%defattr(-,root,root)
-%config(noreplace) /etc/yum.repos.d/CentOS-Xen-48.repo
-
-%files 410
-%defattr(-,root,root)
-%config(noreplace) /etc/yum.repos.d/CentOS-Xen-410.repo
-
-%if 0%{?centos_ver} >= 7
-%files 412
-%defattr(-,root,root)
-%config(noreplace) /etc/yum.repos.d/CentOS-Xen-412.repo
+%if 0%{?centos_ver} <= 7
+%xen_subpackage_file 48
 %endif
+
+%{expand:%(for v in %{list_xen_repo}; do echo "%%xen_subpackage_file $v"; done)}
 
 %changelog
+* Mon Jun 22 2020 Anthony PERARD <anthony.perard@citrix.com> - 9-1
+- adding CentOS 8
+
 * Thu Mar 05 2020 Anthony PERARD <anthony.perard@citrix.com> - 8-8
 - Change default:
    - to 4.12 for CentOS 7
