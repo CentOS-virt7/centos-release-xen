@@ -1,14 +1,7 @@
-%if %{?centos_ver} == 6
-%define default_xen 410
-%else
 %define default_xen 412
-%endif
 
-%if %{?centos_ver} == 6
-%define list_xen_repo 410
-%endif
 %if %{?centos_ver} == 7
-%define list_xen_repo 410 412
+%define list_xen_repo 410 412 413 414
 %endif
 %if %{?centos_ver} == 8
 %define list_xen_repo 412
@@ -19,7 +12,7 @@ Summary: CentOS Virt SIG Xen repo configs
 Name: centos-release-xen
 Epoch: 10
 Version: 9
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 Group: System Environment/Base
 # centos-release-xen-$version.XX.$arch should copy
@@ -28,7 +21,6 @@ Group: System Environment/Base
 # centos-release-xen should copy one of those $version's to
 # CentOS-Xen.repo
 Source100: CentOS-Xen-dependencies.repo.x86_64
-Source146: CentOS-Xen-46.repo.x86_64
 Source148: CentOS-Xen-48.repo.x86_64
 Source246: CentOS-Xen-46.repo.aarch64
 Source300: grub-bootxen.sh
@@ -50,8 +42,9 @@ yum configs and scripts to allow easy installation of Xen on CentOS.
 NOTE This package may change major versions of Xen automatically on
 yum update.  If this is not the behavior you want, please install the
 sub-package specific to the version of xen you want to use and then
-remove this package.  (At the moment this is centos-release-xen-48 or
-centos-release-xen-410 or centos-release-xen-412).
+remove this package.  (At the moment this are centos-release-xen-410
+or centos-release-xen-412 or centos-release-xen-413 or
+centos-release-xen-414).
 
 %package common
 Summary: CentOS Virt Sig Xen support files
@@ -68,7 +61,7 @@ Requires: %{_bindir}/grub-bootxen.sh \
 %description %{1} \
 yum configs and scripts to allow easy installation of Xen %{2} on CentOS. \
  \
-Multiple versions of centos-release-xen-NN can be installed at the \
+Multiple versions of centos-release-xen-NNN can be installed at the \
 same time; by default yum will choose the latest version of xen \
 available across all repositories. \
  \
@@ -82,9 +75,6 @@ the generic package (centos-release-xen). \
 %define xen_subpackage() \
 %{expand:%%xen_subpackage_main %{1} %(i=%{1}; echo ${i:0:1}.${i:1})}
 
-%if 0%{?centos_ver} <= 6
-%xen_subpackage 46
-%endif
 %if 0%{?centos_ver} <= 7
 %xen_subpackage 48
 %endif
@@ -129,9 +119,6 @@ mkdir -p -m 755 $RPM_BUILD_ROOT/%{_bindir}
 install -m 644 %{SOURCE100} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen-dependencies.repo
 
 # Install per-release files
-%if 0%{?centos_ver} <= 6
-install -m 644 %{SOURCE146} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen-46.repo
-%endif
 %if 0%{?centos_ver} <= 7
 install -m 644 %{SOURCE148} $RPM_BUILD_ROOT/etc/yum.repos.d/CentOS-Xen-48.repo
 %endif
@@ -170,10 +157,6 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) /etc/yum.repos.d/CentOS-Xen-%{1}.repo \
 %{nil}
 
-%if 0%{?centos_ver} <= 6
-%xen_subpackage_file 46
-%endif
-
 %if 0%{?centos_ver} <= 7
 %xen_subpackage_file 48
 %endif
@@ -181,6 +164,10 @@ rm -rf $RPM_BUILD_ROOT
 %{expand:%(for v in %{list_xen_repo}; do echo "%%xen_subpackage_file $v"; done)}
 
 %changelog
+* Tue Feb 09 2021 Anthony PERARD <anthony.perard@citrix.com> - 9-2
+- Adding 4.13 and 4.14 to CentOS 7
+- removing CentOS 6 from spec
+
 * Mon Jun 22 2020 Anthony PERARD <anthony.perard@citrix.com> - 9-1
 - adding CentOS 8
 
